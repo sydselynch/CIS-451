@@ -1,0 +1,111 @@
+Syd Lynch
+CIS 451
+Assignment 3
+
+1.
+
+SELECT fname, lname, city, sname
+FROM customer AS c
+JOIN state AS s ON c.state = s.code
+WHERE s.sname IN ('Massachusetts', 'Arizona', 'Colorado')
+ORDER BY FIELD(s.sname, 'Massachusetts', 'Arizona', 'Colorado')
+
+2.
+
+SELECT customer_num, fname, lname, city, state, COALESCE(SUM(total_price), 0) AS totHero
+FROM customer AS c
+LEFT JOIN 
+	(SELECT *
+    FROM orders
+    JOIN items USING(order_num)
+    JOIN manufact USING(manu_code)
+    WHERE manu_name LIKE "Smith") AS smith_items USING(customer_num)
+GROUP BY customer_num
+ORDER BY lname
+
+3.
+
+SELECT fname, lname, total + SUM(ship_charge) as totalSpent
+FROM orders
+JOIN
+	(SELECT SUM(total_price) AS total, fname, lname, order_num, customer_num
+		FROM items
+		JOIN orders AS o USING(order_num)
+		JOIN customer AS c USING(customer_num)
+		GROUP BY customer_num) AS itemPrice USING(customer_num)
+GROUP BY orders.customer_num
+ORDER BY lname
+
+4.
+
+SELECT stock_num, manu_code
+FROM stock
+WHERE (stock_num, manu_code) NOT IN
+(SELECT s.stock_num, s.manu_code
+FROM items i 
+JOIN stock AS s USING(stock_num, manu_code)
+GROUP BY s.stock_num, s.manu_code)
+
+5.
+
+SELECT order_num, customer_num, ship_weight
+FROM orders
+JOIN (
+	SELECT MAX(ship_weight - average) as max, average
+	FROM orders
+	JOIN
+	(SELECT AVG(ship_weight) AS average
+		  FROM orders) AS a) AS maxavg
+WHERE (ship_weight - average) = max
+
+7.
+
+SELECT dname, pname, plocation
+FROM project
+JOIN dept_locations AS loc ON dnum = dnumber
+JOIN department AS d ON d.dnumber = loc.dnumber
+WHERE plocation NOT IN 
+	(SELECT dlocation
+    FROM dept_locations)
+GROUP BY pname
+
+8.
+
+SELECT pname, totHours
+FROM works_on
+JOIN (
+	SELECT MIN(totalHours) AS totHours 
+	FROM (
+		SELECT pno, SUM(hours) AS totalHours
+		FROM works_on
+		GROUP BY pno) AS a
+	) as b
+JOIN project ON pno = pnumber
+GROUP BY pno
+HAVING SUM(hours) = totHours
+
+9.
+
+SELECT CONCAT(fname, " ", lname) AS employeeName, pname
+FROM employee
+JOIN 
+	(
+    SELECT pno, SUM(hours) AS totalHours
+	FROM works_on
+	GROUP BY pno
+	ORDER BY totalHours ASC
+	LIMIT 3
+    ) AS projects
+JOIN works_on AS w ON w.pno = projects.pno
+JOIN project AS p ON p.pnumber = w.pno
+WHERE ssn = w.essn
+
+
+10.
+
+SELECT title, SUM(amount) AS amtSpent
+FROM payment
+JOIN rental USING(rental_id)
+JOIN inventory USING(inventory_id)
+JOIN film USING(film_id)
+GROUP BY title

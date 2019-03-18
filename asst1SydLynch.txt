@@ -1,0 +1,74 @@
+Syd Lynch
+CIS 451
+Assignment 1
+
+
+1. 
+SELECT fname, lname, company
+FROM customer
+WHERE company LIKE '% Sports';
+
+
+2.
+SELECT CONCAT(fname, " ", lname) AS customer_name, city, state, description
+FROM customer AS c
+JOIN orders AS o ON c.customer_num = o.customer_num
+JOIN items AS i ON o.order_num = i.order_num
+JOIN stock AS s ON i.stock_num = s.stock_num AND i.manu_code = s.manu_code
+WHERE s.manu_code = "SMT"
+ORDER BY customer_name
+
+
+3. 
+SELECT sname, fname, lname
+FROM state
+LEFT JOIN customer ON state.code = customer.state
+ORDER BY sname;
+
+
+4.
+SELECT fname, lname
+FROM employee
+JOIN works_on ON employee.ssn = works_on.essn
+JOIN project ON works_on.pno = project.pnumber
+WHERE pname = "ProductY" AND hours >= 8;
+
+
+5.
+SELECT dname, dependent_name
+FROM employee
+JOIN dependent AS dep
+RIGHT JOIN department AS d ON employee.dno = d.dnumber AND dep.essn = employee.ssn
+
+
+6.
+SELECT CONCAT(e1.fname, " ", e1.lname) AS supervisor, CONCAT(e2.fname, " ", e2.lname) AS supervisee
+FROM employee AS e1
+JOIN employee AS e2 ON e1.ssn = e2.superssn
+ORDER BY e1.dno
+
+7.
+SELECT first_name, last_name, title
+FROM rental AS r
+JOIN customer AS c ON c.customer_id = r.customer_id
+JOIN inventory AS i ON r.inventory_id = i.inventory_id
+JOIN film AS f ON i.film_id = f.film_id
+WHERE MONTH(r.rental_date) = 6 AND YEAR(r.rental_date) = 2005
+
+8.
+SELECT first_name, last_name, email
+FROM customer AS c
+JOIN rental AS r ON c.customer_id = r.customer_id
+JOIN payment AS p ON r.rental_id = p.rental_id
+JOIN inventory AS i ON r.inventory_id = i.inventory_id
+JOIN film AS f ON i.film_id = f.film_id
+JOIN film_category AS fc ON f.film_id = fc.film_id
+JOIN category AS ca ON fc.category_id = ca.category_id
+WHERE p.amount > 2 AND ca.name = "Family"
+
+9.
+SELECT COUNT(*)
+FROM rental AS r
+JOIN inventory AS i ON r.inventory_id = i.inventory_id
+JOIN film AS f ON i.film_id = f.film_id
+WHERE f.title LIKE "%TEEN%";
